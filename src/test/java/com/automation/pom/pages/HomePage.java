@@ -28,18 +28,25 @@ public class HomePage {
     }
 
     public void logout() {
-
-        System.out.println("👉 Click en menú lateral");
-        wait.until(ExpectedConditions.elementToBeClickable(menuButton)).click();
-
-
-        System.out.println("👉 Click en logout");
-        wait.until(ExpectedConditions.elementToBeClickable(logoutLink)).click();
+        System.out.println("click on menu button");
+        menuButton.click(); // Click rápido en el botón del menú
 
 
-        System.out.println("👉 Esperando login-button...");
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("click on logout");
+        ((org.openqa.selenium.JavascriptExecutor) driver)
+                .executeScript("arguments[0].click();", logoutLink);
+
+        System.out.println("waiting for login button to be present");
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("login-button")));
-        System.out.println("✅ Login button encontrado!");
+        System.out.println("login button is present");
     }
+
+
 
 }

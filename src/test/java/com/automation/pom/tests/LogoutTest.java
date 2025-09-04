@@ -41,30 +41,22 @@ public class LogoutTest {
 
     @Test
     public void logoutShouldRedirectToLoginPage() {
-        // Login
+
         homePage = loginPage.loginAs("standard_user", "secret_sauce");
 
-        // Logout
+
         homePage.logout();
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-button")));
-
-        String currentUrl = driver.getCurrentUrl();
-        System.out.println("🔎 Current URL after logout: " + currentUrl);
 
         Assert.assertTrue(driver.findElement(By.id("login-button")).isDisplayed(),
                 "Login button should be visible after logout");
 
+        System.out.println("🔎 Current URL after logout: " + driver.getCurrentUrl());
     }
 
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() {
-        // 👇 comenta esto mientras pruebas
-        // if (driver != null) {
-        //     driver.quit();
-        // }
+
     }
 
     @AfterMethod(alwaysRun = true)
@@ -72,7 +64,7 @@ public class LogoutTest {
         if (!result.isSuccess() && driver != null) {
             File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
-            // Nombre único con timestamp y nombre del test
+
             String fileName = "screenshot_" + result.getName() + "_" + System.currentTimeMillis() + ".png";
 
             Files.copy(screenshot.toPath(), Paths.get(fileName));
@@ -80,7 +72,7 @@ public class LogoutTest {
         }
 
         if (driver != null) {
-            driver.quit(); // 👈 aquí cerramos el navegador
+            driver.quit();
         }
     }
 
