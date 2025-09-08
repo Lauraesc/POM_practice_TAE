@@ -1,5 +1,7 @@
 # SauceDemo — Selenium + Java + TestNG (POM)
 
+Project working: https://youtu.be/UtJ7WYqydC4?si=DPxPq5hlVGZO0sNp
+
 ## 1. Purpose
 1. Automate https://www.saucedemo.com using Selenium 4, TestNG, Maven, and Page Object Model (PageFactory).
 2. Use WebDriverManager (no hardcoded driver paths).
