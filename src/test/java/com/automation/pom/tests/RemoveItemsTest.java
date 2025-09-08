@@ -1,19 +1,17 @@
 package com.automation.pom.tests;
 
 import com.automation.pom.pages.CartPage;
-import com.automation.pom.pages.CheckoutPage;
 import com.automation.pom.pages.HomePage;
 import com.automation.pom.pages.LoginPage;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class PurchaseTest extends BaseTest {
+public class RemoveItemsTest extends BaseTest {
 
     private LoginPage loginPage;
     private HomePage homePage;
     private CartPage cartPage;
-    private CheckoutPage checkoutPage;
 
     @BeforeMethod
     public void startFresh() {
@@ -24,17 +22,14 @@ public class PurchaseTest extends BaseTest {
     }
 
     @Test
-    public void testPurchaseFlow() {
-        homePage.addRandomItemToCart();
+    public void addThreeItems_thenRemoveAll_cartMustBeEmpty() {
+        homePage.addItems(3);
+        Assert.assertEquals(homePage.getCartBadgeCount(), 3, "The cart badge should show 3 items");
         homePage.goToCart();
         cartPage = new CartPage(driver);
-        cartPage.clickCheckout();
-        checkoutPage = new CheckoutPage(driver);
-        checkoutPage.completeCheckout("Laura", "Escobar", "110111");
-        Assert.assertEquals(
-                checkoutPage.getSuccessMessage(),
-                "Thank you for your order!",
-                "The purchase should be completed successfully"
-        );
+        Assert.assertEquals(cartPage.getCartItemCount(), 3, "The cart should contain 3 items");
+        cartPage.removeAllItems();
+        Assert.assertTrue(cartPage.isEmpty(), "The cart should be empty after removing all items");
+        Assert.assertTrue(cartPage.isBadgeAbsent(), "The badge should be absent after removing all items");
     }
 }

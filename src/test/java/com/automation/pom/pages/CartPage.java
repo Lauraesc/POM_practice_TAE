@@ -1,24 +1,15 @@
 package com.automation.pom.pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.*;
 
 import java.time.Duration;
 import java.util.List;
 
-public class CartPage {
+public class CartPage extends BasePage {
 
-    private final WebDriver driver;
     private final WebDriverWait wait;
 
     @FindBy(css = ".cart_item")
@@ -31,129 +22,55 @@ public class CartPage {
     private List<WebElement> removeButtons;
 
     public CartPage(WebDriver driver) {
-        this.driver = driver;
+        super(driver);
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         PageFactory.initElements(driver, this);
+        waitUntilLoaded();
     }
-
 
     public CartPage waitUntilLoaded() {
-        wait.until(ExpectedConditions.urlContains("cart.html"));
-
-        try {
-            wait.until(ExpectedConditions.visibilityOf(checkoutButton));
-        } catch (Exception e) {
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.id("checkout")));
-        }
+        wait.until(ExpectedConditions.urlToBe("https://www.saucedemo.com/cart.html"));
+        wait.until(ExpectedConditions.visibilityOf(checkoutButton));
         return this;
     }
-
 
     public int getCartItemCount() {
         waitUntilLoaded();
         return cartItems.size();
     }
 
-
     public void clickCheckout() {
         waitUntilLoaded();
-
-        By checkoutBy = By.id("checkout");
-
-
-        for (int attempt = 0; attempt < 3; attempt++) {
-            try {
-                WebElement btn = wait.until(ExpectedConditions.presenceOfElementLocated(checkoutBy));
-                wait.until(ExpectedConditions.elementToBeClickable(btn));
-                scrollIntoView(btn);
-
-
-                try {
-                    btn.click();
-                    if (waitForStepOneQuick()) return;
-                } catch (Exception ignored) {}
-
-
-                try {
-                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
-                    if (waitForStepOneQuick()) return;
-                } catch (Exception ignored) {}
-
-
-                try {
-                    new Actions(driver).moveToElement(btn).click().perform();
-                    if (waitForStepOneQuick()) return;
-                } catch (Exception ignored) {}
-
-
-                try {
-                    btn.sendKeys(Keys.ENTER);
-                    if (waitForStepOneQuick()) return;
-                } catch (Exception ignored) {}
-
-
-                sleep(250);
-
-            } catch (StaleElementReferenceException sere) {
-
-                sleep(200);
-            }
-        }
-
-
-        driver.navigate().to("https://www.saucedemo.com/checkout-step-one.html");
-
-
+        scrollIntoView(checkoutButton);
+        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton)).click();
         wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("checkout-step-one.html"),
-                ExpectedConditions.presenceOfElementLocated(By.id("first-name"))
+                ExpectedConditions.urlToBe("https://www.saucedemo.com/checkout-step-one.html"),
+                ExpectedConditions.visibilityOfElementLocated(By.id("first-name"))
         ));
     }
-
 
     public void removeAllItems() {
         waitUntilLoaded();
         for (WebElement btn : removeButtons) {
-            safeClick(btn);
+            try {
+                scrollIntoView(btn);
+                wait.until(ExpectedConditions.elementToBeClickable(btn)).click();
+            } catch (Exception e) {
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
+            }
         }
         wait.until(ExpectedConditions.numberOfElementsToBe(By.cssSelector(".cart_item"), 0));
     }
 
-
-    private boolean waitForStepOneQuick() {
+    public boolean isEmpty() {
+        waitUntilLoaded();
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(4)).until(ExpectedConditions.or(
-                    ExpectedConditions.urlContains("checkout-step-one.html"),
-                    ExpectedConditions.presenceOfElementLocated(By.id("first-name"))
-            ));
-            return true;
-        } catch (TimeoutException e) {
-            return false;
-        }
+            wait.until(ExpectedConditions.numberOfElementsToBe(By.cssSelector(".cart_item"), 0));
+        } catch (TimeoutException ignored) {}
+        return driver.findElements(By.cssSelector(".cart_item")).isEmpty();
     }
 
-    private void safeClick(WebElement element) {
-        try {
-            wait.until(ExpectedConditions.elementToBeClickable(element));
-            scrollIntoView(element);
-            element.click();
-        } catch (Exception e) {
-            try {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-            } catch (Exception jsEx) {
-                throw e;
-            }
-        }
-    }
-
-    private void scrollIntoView(WebElement el) {
-        try {
-            ((JavascriptExecutor) driver)
-                    .executeScript("arguments[0].scrollIntoView({block:'center'});", el);
-        } catch (Exception ignored) {}
-    }
-
-    private void sleep(long ms) {
-        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
+    public boolean isBadgeAbsent() {
+        return driver.findElements(By.cssSelector("[data-test='shopping-cart-badge']")).isEmpty();
     }
 }

@@ -4,10 +4,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class LoginPage {
+import java.time.Duration;
 
-    private WebDriver driver;
+public class LoginPage extends BasePage {
+
+    private final WebDriverWait wait;
 
     public static final String LOGIN_URL = "https://www.saucedemo.com/";
 
@@ -24,32 +28,39 @@ public class LoginPage {
     private WebElement errorMessage;
 
     public LoginPage(WebDriver driver) {
-        this.driver = driver;
+        super(driver);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         PageFactory.initElements(driver, this);
+        wait.until(ExpectedConditions.visibilityOf(loginButton));
     }
 
     public void enterUsername(String username) {
+        wait.until(ExpectedConditions.elementToBeClickable(usernameField));
         usernameField.clear();
         usernameField.sendKeys(username);
     }
 
     public void enterPassword(String password) {
+        wait.until(ExpectedConditions.elementToBeClickable(passwordField));
         passwordField.clear();
         passwordField.sendKeys(password);
     }
 
     public void clickLogin() {
-        loginButton.click();
+        wait.until(ExpectedConditions.elementToBeClickable(loginButton)).click();
     }
 
     public boolean isErrorMessageDisplayed() {
-        return errorMessage.isDisplayed();
+        try {
+            return errorMessage.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public String getErrorMessage() {
         return errorMessage.getText();
     }
-
 
     public HomePage loginAs(String username, String password) {
         enterUsername(username);
